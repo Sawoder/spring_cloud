@@ -1,6 +1,7 @@
 package org.nipu.po.order;
 
-import org.nipu.po.catalog.ProductSpecificationRepository;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.nipu.po.order.clients.ProductSpecificationRepository;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,11 +21,17 @@ public class OrderController {
         this.specificationRepository = specificationRepository;
     }
 
-    @PutMapping("/catalog/{specificationId}/order")
+    @HystrixCommand(fallbackMethod = "getFallback")
+    @PutMapping("/order/{specificationId}")
     public ProductOrder orderProductBySpecificationId(@PathVariable String specificationId) {
-        if (!specificationRepository.existsById(specificationId)) {
+        System.out.println(specificationRepository.getCatalog());
+        if (specificationRepository.existsById(specificationId) == null) {
             throw new RuntimeException("There is no product specification with Id: " + specificationId);
         }
         return orderRepository.save(new ProductOrder(null, specificationId, 1l));
+    }
+
+    public ProductOrder getFallback(String id) {
+        return new ProductOrder("Exception", id, 0L);
     }
 }

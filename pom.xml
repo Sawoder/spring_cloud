@@ -30,6 +30,7 @@
         <module>po</module>
         <module>eureka</module>
         <module>gateway</module>
+        <module>zipkin</module>
     </modules>
 
     <dependencyManagement>

@@ -1,7 +1,8 @@
 package org.nipu.po.order.clients;
 
-import org.nipu.po.FeignConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -11,9 +12,26 @@ import org.springframework.web.bind.annotation.RequestMethod;
  *
  * @author Nikita_Puzankov
  */
-@FeignClient(name = "pc-cloud-client", configuration = FeignConfiguration.class)
+@FeignClient(name = "pc-cloud-client",
+        fallback = ProductSpecificationRepository.ProductSpecificationRepositoryFallback.class)
 public interface ProductSpecificationRepository {
 
     @RequestMapping(method = RequestMethod.GET, path = "/catalog/{specificationId}")
     Object existsById(@PathVariable("specificationId") String specificationId);
+
+    @GetMapping("/catalog")
+    String getCatalog();
+
+    @Component
+    class ProductSpecificationRepositoryFallback implements ProductSpecificationRepository {
+        @Override
+        public Object existsById(String specificationId) {
+            return null;
+        }
+
+        @Override
+        public String getCatalog() {
+            return "Fallback catalog";
+        }
+    }
 }
